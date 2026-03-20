@@ -1,0 +1,12 @@
+[project]
+name = "blogging-platform-api"
+version = "0.1.0"
+description = "Add your description here"
+requires-python = ">=3.14"
+dependencies = [
+    "asyncpg>=0.31.0",
+    "fastapi>=0.135.1",
+    "pydantic>=2.12.5",
+    "python-dotenv>=1.2.2",
+    "uvicorn>=0.42.0",
+]
