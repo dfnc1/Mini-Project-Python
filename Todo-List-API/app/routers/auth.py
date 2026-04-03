@@ -1,6 +1,5 @@
 from typing import Annotated
 
-import asyncpg
 from pwdlib import PasswordHash
 
 from fastapi import APIRouter, Depends, HTTPException, status
@@ -12,7 +11,6 @@ router = APIRouter(prefix="/auth", tags=["auth"], responses={404: {"description"
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 password_hasher = PasswordHash.recommended()
-
 
 @router.post("/register")
 async def register(payload: Register, conn= Depends(get_db)):
