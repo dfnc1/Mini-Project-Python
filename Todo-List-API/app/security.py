@@ -4,17 +4,20 @@ import os
 
 from fastapi import Depends, HTTPException,status
 from fastapi.security import OAuth2PasswordBearer
-from dotenv import load_dotenv
 from pwdlib import PasswordHash
+from dotenv import load_dotenv
 import jwt
 from jwt.exceptions import InvalidTokenError
+import asyncpg
 
-from .schemas import TokenData
-from .repository import get_user
+from app.database import get_db
+from app.schemas import TokenData
+from app.repository.users import get_user
 
 load_dotenv()
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
 password_hash = PasswordHash.recommended()
+ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
 def get_password_hash(password):
     return password_hash.hash(password)
@@ -22,17 +25,13 @@ def get_password_hash(password):
 def verify_password(plain_password, hashed_password):
     return password_hash.verify(plain_password, hashed_password)
 
-def create_access_token(data: dict, expires_delta: timedelta = None):
+def create_access_token(data: dict):
     to_encode = data.copy()
-    if expires_delta:
-        expire = datetime.now(timezone.utc) + expires_delta
-    else:
-        expire = datetime.now(timezone.utc) + timedelta(minutes=15)
-    to_encode.update({"exp": expire})
+    to_encode.update({"exp": datetime.now(timezone.utc) + timedelta(ACCESS_TOKEN_EXPIRE_MINUTES)})
     encoded_jwt = jwt.encode(to_encode, os.getenv("SECRET_KEY"), algorithm=os.getenv("ALGORITHM"))
     return encoded_jwt
 
-async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)], conn):
+async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)], conn= Depends(get_db)):
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
@@ -52,7 +51,7 @@ async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)], conn):
         raise credentials_exception
     return user
 
-async def authenticate_user(email: str, password: str, conn):
+async def authenticate_user(email: str, password: str, conn: asyncpg.Pool):
     user = await get_user(email, conn)
     if not user:
         return False
