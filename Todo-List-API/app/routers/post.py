@@ -3,23 +3,23 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException, status
 
 from app.database import get_db
-from app.schemas import User, Post
+from app.schemas import User, Post, ListPosts
 from app.security import get_current_user
 from app.repository.posts import create_post, update_post, delete_post, get_post
 
 router = APIRouter(prefix="/post", tags=["post"])
 
-@router.get("/todos", status_code=status.HTTP_200_OK)
-async def get_todos(current_user: Annotated[User, Depends(get_current_user)], conn= Depends(get_db)):
-    try:
-        return await get_post(conn=conn)
-    except Exception as e:
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
-
 @router.get("/todos/{todo_id}", status_code=status.HTTP_200_OK)
-async def get_todo(todo_id: int, current_user: Annotated[User, Depends(get_current_user)], conn= Depends(get_db)):
+async def get_todo(page: int, limit: int, current_user: Annotated[User, Depends(get_current_user)], conn= Depends(get_db)):
     try:
-        return await get_post(conn=conn, id=todo_id)
+        data = await get_post(conn=conn, page=page, limit=limit)
+        return {
+            "data": data,
+            "page": page,
+            "limit": limit,
+            "total": len(data)
+        }
+
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
 

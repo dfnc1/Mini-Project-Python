@@ -1,3 +1,5 @@
+from typing import List
+
 from pydantic import BaseModel
 
 class User(BaseModel):
@@ -22,3 +24,9 @@ class TokenData(BaseModel):
 class Post(BaseModel):
     title: str
     description: str
+
+class ListPosts(BaseModel):
+    data: List[Post]
+    page: int
+    limit: int
+    total_pages: int
