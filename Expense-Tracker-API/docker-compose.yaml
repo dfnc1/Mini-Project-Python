@@ -1,7 +1,7 @@
 services:
-  app:
+  api:
     build: .
-    container_name: api
+    container_name: fastapi
     ports:
       - "8000:8000"
     env_file:
@@ -11,20 +11,21 @@ services:
         condition: service_healthy
     volumes:
       - .:/api
+      - /api/.venv
     networks:
       - app_network
 
   db:
     image: postgres:15.17
-    container_name: db
+    container_name: postgres_db
     restart: always
     shm_size: 128mb
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: 1234
-      POSTGRES_DB: extrackapi
+      POSTGRES_DB: postgres_data
     volumes:
-      - extrackapi:/var/lib/postgresql/data
+      - postgres_data:/var/lib/postgresql/data
     healthcheck:
       test: [ "CMD-SHELL", "pg_isready -U postgres -d extrackapi" ]
       interval: 5s
@@ -33,8 +34,21 @@ services:
     networks:
       - app_network
 
+  cache:
+    image: redis:7.4.8-alpine
+    container_name: redis_cache
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - app_network
+
+
 volumes:
-  extrackapi:
+  postgres_data:
+  redis_data:
 
 networks:
   app_network:
