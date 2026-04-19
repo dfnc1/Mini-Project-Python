@@ -7,3 +7,12 @@ class Token(BaseModel):
 class Register(BaseModel):
     username: str
     password: str
+
+class User(BaseModel):
+    username: str
+
+class UserInDB(User):
+    hashed_password: str
+
+class TokenData(BaseModel):
+    email: str
