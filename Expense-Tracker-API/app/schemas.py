@@ -5,11 +5,13 @@ class Token(BaseModel):
     token_type: str
 
 class Register(BaseModel):
-    username: str
+    name: str
+    email: str
     password: str
 
 class User(BaseModel):
-    username: str
+    name: str
+    email: str
 
 class UserInDB(User):
     hashed_password: str
