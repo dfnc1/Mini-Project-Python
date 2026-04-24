@@ -3,7 +3,7 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 
-from app.repository.users import add_user
+from app.repository.users import add_user, get_user
 from app.schemas import Token, Register, UserInDB
 from app.databases import get_db
 from app.security import get_password_hash, create_access_token
@@ -23,10 +23,10 @@ async def signup(payload: Register, conn= Depends(get_db)):
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
 
-
 @router.post("/login", response_model=Token)
 async def login(form_data: Annotated[OAuth2PasswordRequestForm, Depends()], conn= Depends(get_db)):
-    user = None
+    user = await get_user(email=form_data.username, conn=conn)
     if not user:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Incorrect username or password", headers={"WWW-Authenticate": "Bearer"})
-    pass
+    access_token = create_access_token(data={"sub": user["email"]})
+    return Token(access_token=access_token, token_type="bearer")
