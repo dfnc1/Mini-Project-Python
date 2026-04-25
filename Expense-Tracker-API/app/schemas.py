@@ -18,3 +18,8 @@ class UserInDB(User):
 
 class TokenData(BaseModel):
     email: str
+
+class Post(BaseModel):
+    description: str
+    category: str
+    amount: float
