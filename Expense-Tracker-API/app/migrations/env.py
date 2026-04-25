@@ -15,7 +15,13 @@ from dotenv import load_dotenv
 config = context.config
 
 load_dotenv()
-config.set_main_option(name="sqlalchemy.url", value=os.getenv("DATABASE_URL"))
+db_url = os.getenv("DATABASE_URL")
+
+if db_url:
+    if "asyncpg" not in db_url:
+        db_url = db_url.replace("postgresql://", "postgresql+asyncpg://")
+
+    config.set_main_option("sqlalchemy.url", db_url)
 # Interpret the config file for Python logging.
 # This line sets up loggers basically.
 if config.config_file_name is not None:
