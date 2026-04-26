@@ -28,7 +28,7 @@ def create_access_token(data: dict):
     to_encode.update({"exp": datetime.now(timezone.utc) + timedelta(int(os.getenv("ACCES_TOKEN_EXPIRE_MINUTES")))})
     return jwt.encode(to_encode, key=os.getenv("SECRET_KEY"), algorithm=os.getenv("ALGORITHM"))
 
-async def get_current_user(token: Annotated[str, Depends()], conn=Depends(get_db())):
+async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)], conn=Depends(get_db)):
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
