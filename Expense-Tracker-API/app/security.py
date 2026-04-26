@@ -3,6 +3,7 @@ from datetime import timedelta, datetime, timezone
 from typing import Annotated
 
 import jwt
+from jwt import InvalidTokenError
 from pwdlib import PasswordHash
 from dotenv import load_dotenv
 from fastapi import Depends, HTTPException, status
@@ -35,12 +36,12 @@ async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)], conn=D
         headers={"WWW-Authenticate": "Bearer"},
     )
     try:
-        payload = await jwt.decode(token, key=os.getenv("SECRET_KEY"), algorithm=os.getenv("ALGORITHM"))
+        payload = jwt.decode(token, key=os.getenv("SECRET_KEY"), algorithms=[os.getenv("ALGORITHM")])
         email: str = payload.get("sub")
         if email is None:
             raise credentials_exception
         token_data = TokenData(email=email)
-    except:
+    except InvalidTokenError:
         raise credentials_exception
 
     user = await get_user(email=token_data.email, conn=conn)
