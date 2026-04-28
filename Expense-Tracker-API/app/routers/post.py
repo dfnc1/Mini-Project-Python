@@ -23,4 +23,4 @@ async def update_expense(id: int, data: Post, current_user: Annotated[User, Depe
 
 @router.get("/expense/", status_code=status.HTTP_200_OK)
 async def get_expense(filter: str, current_user: Annotated[User, Depends(get_current_user)],conn= Depends(get_db)):
-    return await get_expense(filter= filter, conn= conn)
+    return await get_posts(filter= filter, conn= conn)
